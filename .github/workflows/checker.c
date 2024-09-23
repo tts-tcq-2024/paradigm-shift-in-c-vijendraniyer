@@ -21,18 +21,18 @@ bool isChargeRateOk(float chargeRate) {
 }
 
 // Helper function to check and print status
-bool checkAndPrint(bool condition, const char* message) {
+bool checkAndPrint(bool condition, const char* message, float value) {
     if (!condition) {
-        printf("%s\n", message);
+        printf("%s: %f\n", message, value);
     }
     return condition;
 }
 
 // Function to determine battery status
 bool batteryIsOk(float temperature, float soc, float chargeRate) {
-    bool isTemperatureValid = checkAndPrint(isTemperatureOk(temperature), "Temperature out of range!");
-    bool isSocValid = checkAndPrint(isSocOk(soc), "State of Charge out of range!");
-    bool isChargeRateValid = checkAndPrint(isChargeRateOk(chargeRate), "Charge Rate out of range!");
+    bool isTemperatureValid = checkAndPrint(isTemperatureOk(temperature), "Temperature out of range!", temperature);
+    bool isSocValid = checkAndPrint(isSocOk(soc), "State of Charge out of range!", soc);
+    bool isChargeRateValid = checkAndPrint(isChargeRateOk(chargeRate), "Charge Rate out of range!", chargeRate);
 
     return isTemperatureValid && isSocValid && isChargeRateValid;
 }
@@ -42,5 +42,8 @@ int main() {
     assert(!batteryIsOk(50, 85, 0));  // Should fail
     assert(!batteryIsOk(30, 15, 0.5)); // Should fail
     assert(!batteryIsOk(10, 75, 0.9)); // Should fail
-    assert(batteryIsOk(45, 20, 0.8)); // Upper limits, should pass
+    assert(batteryIsOk(45, 20, 0.8));  // Should pass, since 45, 20, and 0.8 are valid
+
+    printf("All assertions passed.\n");
+    return 0;
 }
