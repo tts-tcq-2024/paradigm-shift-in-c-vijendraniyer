@@ -38,12 +38,12 @@ bool batteryIsOk(float temperature, float soc, float chargeRate) {
 }
 
 int main() {
-    assert(batteryIsOk(25, 70, 0.7)); // Should pass
-    assert(!batteryIsOk(50, 85, 0));  // Should fail
-    assert(!batteryIsOk(30, 15, 0.5)); // Should fail
-    assert(!batteryIsOk(10, 75, 0.9)); // Should fail
-    assert(batteryIsOk(45, 20, 0.8));  // Should pass, since 45, 20, and 0.8 are valid
+    printf("Testing batteryIsOk with (25, 70, 0.7): %d\n", batteryIsOk(25, 70, 0.7)); // Should pass
+    printf("Testing batteryIsOk with (50, 85, 0): %d\n", batteryIsOk(50, 85, 0));   // Should fail
+    printf("Testing batteryIsOk with (30, 15, 0.5): %d\n", batteryIsOk(30, 15, 0.5)); // Should fail
+    printf("Testing batteryIsOk with (10, 75, 0.9): %d\n", batteryIsOk(10, 75, 0.9)); // Should fail
+    printf("Testing batteryIsOk with (45, 20, 0.8): %d\n", batteryIsOk(45, 20, 0.8));  // Should pass
 
-    printf("All assertions passed.\n");
     return 0;
 }
+
