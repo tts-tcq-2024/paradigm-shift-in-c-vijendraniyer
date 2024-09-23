@@ -2,54 +2,84 @@
 #include <assert.h>
 #include <stdbool.h>
 
-// Function to check if a value is within a specified range
+// Define constants for temperature, state of charge, and charge rate limits
+#define MIN_TEMP 0.0f
+#define MAX_TEMP 45.0f
+#define MIN_SOC 20.0f
+#define MAX_SOC 80.0f
+#define MAX_CHARGE_RATE 0.8f
+#define TOLERANCE 0.0001f // Tolerance for floating-point comparison
+
+// Function declarations (prototypes)
+bool isInRange(float value, float low, float high);
+bool isTemperatureOk(float temperature);
+bool isSocOk(float soc);
+bool isChargeRateOk(float chargeRate);
+bool batteryIsOk(float temperature, float soc, float chargeRate);
+
+/**
+ * @brief Check if a value is within a specified range.
+ *
+ * @param value The value to check.
+ * @param low The lower bound of the range.
+ * @param high The upper bound of the range.
+ * @return true if value is within the range [low, high], false otherwise.
+ */
 bool isInRange(float value, float low, float high) {
     return value >= low && value <= high;
 }
 
-// Pure functions for battery checks
+/**
+ * @brief Check if the battery temperature is within a safe range.
+ *
+ * @param temperature The current temperature of the battery.
+ * @return true if temperature is between MIN_TEMP and MAX_TEMP, false otherwise.
+ */
 bool isTemperatureOk(float temperature) {
-    return isInRange(temperature, 0, 45); // Check temperature range
+    return isInRange(temperature, MIN_TEMP, MAX_TEMP);
 }
 
+/**
+ * @brief Check if the state of charge (SoC) is within a safe range.
+ *
+ * @param soc The current state of charge of the battery.
+ * @return true if SoC is between MIN_SOC and MAX_SOC, false otherwise.
+ */
 bool isSocOk(float soc) {
-    return isInRange(soc, 20, 80); // Check SoC range
+    return isInRange(soc, MIN_SOC, MAX_SOC);
 }
 
+/**
+ * @brief Check if the charge rate is acceptable.
+ *
+ * @param chargeRate The current charge rate of the battery.
+ * @return true if chargeRate is less than or equal to MAX_CHARGE_RATE (with a small tolerance).
+ */
 bool isChargeRateOk(float chargeRate) {
-    return chargeRate <= 0.8; // Check charge rate
+    return chargeRate <= (MAX_CHARGE_RATE + TOLERANCE);
 }
 
-// Helper function to check and print status
-bool checkAndPrint(bool condition, const char* message, float value) {
-    if (!condition) {
-        printf("%s: %f\n", message, value); // Print message if condition fails
-    }
-    return condition;
-}
-
-// Function to determine battery status
+/**
+ * @brief Determine overall battery status.
+ *
+ * @param temperature The current temperature of the battery.
+ * @param soc The current state of charge of the battery.
+ * @param chargeRate The current charge rate of the battery.
+ * @return true if all checks pass, false if any check fails.
+ */
 bool batteryIsOk(float temperature, float soc, float chargeRate) {
-    bool isTemperatureValid = checkAndPrint(isTemperatureOk(temperature), "Temperature out of range!", temperature);
-    bool isSocValid = checkAndPrint(isSocOk(soc), "State of Charge out of range!", soc);
-    bool isChargeRateValid = checkAndPrint(isChargeRateOk(chargeRate), "Charge Rate out of range!", chargeRate);
-
-    return isTemperatureValid && isSocValid && isChargeRateValid; // Return overall validity
+    return isTemperatureOk(temperature) && isSocOk(soc) && isChargeRateOk(chargeRate);
 }
 
 int main() {
-    // Individual assertions for each check
-    assert(batteryIsOk(25, 70, 0.7));  // Should pass
-    assert(!batteryIsOk(50, 85, 0));   // Should fail
-    assert(!batteryIsOk(30, 15, 0.5));  // Should fail
-    assert(!batteryIsOk(10, 75, 0.9));  // Should fail
-    assert(batteryIsOk(45, 20, 0.8));   // Should pass
+    // Run assertions to verify battery conditions
+    assert(batteryIsOk(25.0f, 70.0f, 0.7f));  // Should pass: all values are within acceptable ranges
+    assert(!batteryIsOk(50.0f, 85.0f, 0.0f));  // Should fail: temperature and SoC out of range
+    assert(!batteryIsOk(30.0f, 15.0f, 0.5f));  // Should fail: SoC out of range
+    assert(!batteryIsOk(10.0f, 75.0f, 0.9f));  // Should fail: charge rate out of range
+    assert(batteryIsOk(45.0f, 20.0f, 0.8f));   // Should pass: all values are within acceptable ranges
 
-    // Assert individual conditions
-    assert(isTemperatureOk(45));  // Should pass
-    assert(isSocOk(20));          // Should pass
-    assert(isChargeRateOk(0.8));  // Should pass
-
+    // If all assertions pass, print a success message
     printf("All assertions passed.\n");
-    return 0;
+    return 0; // Exit the program
 }
