@@ -33,14 +33,14 @@ bool batteryIsOk(float temperature, float soc, float chargeRate) {
     bool isTemperatureValid = checkAndPrint(isTemperatureOk(temperature), "Temperature out of range!");
     bool isSocValid = checkAndPrint(isSocOk(soc), "State of Charge out of range!");
     bool isChargeRateValid = checkAndPrint(isChargeRateOk(chargeRate), "Charge Rate out of range!");
-    
+
     return isTemperatureValid && isSocValid && isChargeRateValid;
 }
 
 int main() {
-    assert(batteryIsOk(25, 70, 0.7));
-    assert(!batteryIsOk(50, 85, 0));
-    assert(!batteryIsOk(30, 15, 0.5)); // Test for low SoC
-    assert(!batteryIsOk(10, 75, 0.9)); // Test for high charge rate
-    assert(batteryIsOk(45, 20, 0.8)); // Upper limits
+    assert(batteryIsOk(25, 70, 0.7)); // Should pass
+    assert(!batteryIsOk(50, 85, 0));  // Should fail
+    assert(!batteryIsOk(30, 15, 0.5)); // Should fail
+    assert(!batteryIsOk(10, 75, 0.9)); // Should fail
+    assert(batteryIsOk(45, 20, 0.8)); // Upper limits, should pass
 }
