@@ -1,109 +1,63 @@
 #include <stdio.h>
-#include <assert.h>
-#include <string.h>
+#include "checker.h"
 
-// enumeration to avoid multiple print statements
-typedef enum {
-  BATTERY_OK,
-  TEMP_OUT_OF_RANGE,
-  SOC_OUT_OF_RANGE,
-  CHARGE_RATE_OUT_OF_RANGE
-} BatterySts_en;
-
-typedef enum {
-  NORMAL,
-  TOO_LOW,
-  TOO_HIGH
-} BreachType_en;
-
-typedef struct {
-  BatterySts_en status;
-  BreachType_en breachType;
-} BatteryCheckResult_st;
-
-// Separate functions for each condition i.e helper functions
-int isTempOrSocOutOfRange(float qty, float ll, float ul) 
-{
-  return (qty < ll || qty > ul);
-}
-
-int isChargeRateOutOfRange(float chargeRate)
-{
-  return (chargeRate > 0.8);
-}
-
-BatteryCheckResult_st checkTemperature(float temperature)
-{
-    BatteryCheckResult_st result = {BATTERY_OK, NORMAL};
-
-    if (temperature < 0)
-    {
-        result.status = TEMP_OUT_OF_RANGE;
-        result.breachType = TOO_LOW;
+// Strategy implementations
+BatterySts_en checkTemperature(float temperature, BreachType_en *breachType, int *warning) {
+    if (temperature < 0) {
+        *breachType = TOO_LOW;
+        *warning = 1; // Warning enabled
+        return TEMP_OUT_OF_RANGE;
+    } else if (temperature > 45) {
+        *breachType = TOO_HIGH;
+        *warning = 1; // Warning enabled
+        return TEMP_OUT_OF_RANGE;
     }
-    else if (temperature > 45)
-    {
-        result.status = TEMP_OUT_OF_RANGE;
-        result.breachType = TOO_HIGH;
+    *warning = 0; // No warning
+    return BATTERY_OK;
+}
+
+BatterySts_en checkSoc(float soc, BreachType_en *breachType, int *warning) {
+    if (soc < 20) {
+        *breachType = TOO_LOW;
+        *warning = 1; // Warning enabled
+        return SOC_OUT_OF_RANGE;
+    } else if (soc > 80) {
+        *breachType = TOO_HIGH;
+        *warning = 1; // Warning enabled
+        return SOC_OUT_OF_RANGE;
+    }
+    *warning = 0; // No warning
+    return BATTERY_OK;
+}
+
+BatterySts_en checkChargeRate(float chargeRate, BreachType_en *breachType, int *warning) {
+    if (chargeRate > 0.8) {
+        *breachType = TOO_HIGH;
+        *warning = 1; // Warning enabled
+        return CHARGE_RATE_OUT_OF_RANGE;
+    }
+    *warning = 0; // No warning
+    return BATTERY_OK;
+}
+
+// Function to check battery status using strategies
+BatterySts_en batteryIsOk(float temperature, float soc, float chargeRate) {
+    BatteryCheckStrategy tempStrategy = {checkTemperature};
+    BatteryCheckStrategy socStrategy = {checkSoc};
+    BatteryCheckStrategy chargeRateStrategy = {checkChargeRate};
+
+    BreachType_en breachType;
+    int warning = 0;
+
+    BatterySts_en status = tempStrategy.check(temperature, &breachType, &warning);
+    if (status != BATTERY_OK) {
+        return status;
     }
 
-    return result;
-}
+    status = socStrategy.check(soc, &breachType, &warning);
+    if (status != BATTERY_OK) {
+        return status;
+    }
 
-BatteryCheckResult_st checkSoc(float soc)
-{
-  BatteryCheckResult_st result = {BATTERY_OK, NORMAL};
-
-  if (soc < 20)
-  {
-    result.status = SOC_OUT_OF_RANGE;
-    result.breachType = TOO_LOW;
-  }
-  else if (soc > 80)
-  {
-    result.status = SOC_OUT_OF_RANGE;
-    result.breachType = TOO_HIGH;
-  }
-
-  return result;
-}
-
-BatterySts_en checkChargeRate(float chargeRate)
-{
-  BatteryCheckResult_st result = {BATTERY_OK, NORMAL};
-
-  if (chargeRate > 0.8)
-  {
-    result.status = CHARGE_RATE_OUT_OF_RANGE;
-    result.breachType = TOO_HIGH;
-  }
-
-  return result.status;
-}
-
-BatterySts_en batteryIsOk(float temperature, float soc, float chargeRate)
-{
-  BatteryCheckResult_st result;
-
-  result = checkTemperature(temperature);
-  if (result.status != BATTERY_OK)
-  {
-    return result.status;
-  }
-
-  result = checkSoc(soc);
-  if (result.status != BATTERY_OK)
-  {
-    return result.status;
-  }
-
-  return checkChargeRate(chargeRate);
-}
-
-int main() 
-{
-  assert(batteryIsOk(-30, 70, 0.7) == 1);
-  assert(batteryIsOk(40, 10, 0) == 2);
-  assert(batteryIsOk(25, 70, 0.9) == 3);
-  assert(batteryIsOk(20, 50, 0.5) == 0);
+    return chargeRateStrategy.check(chargeRate, &breachType, &warning);
 }
