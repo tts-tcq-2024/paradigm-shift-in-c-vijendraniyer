@@ -1,7 +1,7 @@
 #ifndef CHECKER_H
 #define CHECKER_H
 
-// Enumeration for battery status and breach type
+// Enumeration for battery status
 typedef enum {
     BATTERY_OK,
     TEMP_OUT_OF_RANGE,
@@ -9,6 +9,7 @@ typedef enum {
     CHARGE_RATE_OUT_OF_RANGE
 } BatterySts_en;
 
+// Enumeration for breach type
 typedef enum {
     NORMAL,
     TOO_LOW,
@@ -17,6 +18,7 @@ typedef enum {
 
 // Strategy interface for battery checks
 typedef struct BatteryCheckStrategy {
+    // Function pointer for the check function that will be implemented by each strategy
     BatterySts_en (*check)(float value, BreachType_en *breachType, int *warning);
 } BatteryCheckStrategy;
 
